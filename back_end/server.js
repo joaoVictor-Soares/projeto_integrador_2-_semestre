@@ -23,6 +23,28 @@ app.post('/cadastro', (req, res) => {
   });
 });
 
+app.post('/login', (req, res) => {
+  const { email, senha } = req.body;
+
+  const sql = "SELECT nome_completo FROM cadastro WHERE email = ? AND senha = ?";
+  db.query(sql, [email, senha], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Erro no servidor" });
+    }
+
+    if (results.length > 0) {
+      res.json({ message: "Bem-vindo, " + results[0].nome_completo + "!" });
+
+    } else {
+      res.status(401).json({ error: "Email ou senha inválidos" });
+    }
+  });
+  // console.log("Recebido:", email, senha);
+  // console.log("Resultados da query:", results);
+
+});
+
 app.listen(3000, () => {
   console.log("Servidor rodando em http://localhost:3000");
 });
