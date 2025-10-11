@@ -46,7 +46,10 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/estoqueEntrada', (req, res) =>{
-  const {}
+  const {idProduto, quantity, location, responsible, dataEntrada} = req.body;
+  const sql = "INSERT INTO estoque_entrada (produto_id, quantidade, data_entrada, fornecedor, observacao, localizacao) VALUES (?, ?, ?, ?, ?)";
+  db.query(sql, [idProduto, quantity, dataEntrada, ])
+
 })
 
 app.listen(3000, () => {

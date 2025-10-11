@@ -356,6 +356,7 @@
                 location: document.getElementById('location').value,
                 responsible: document.getElementById('responsible').value,
                 dataEntrada: document.getElementById('dataEntrada'). value
+                observacao: document.getElementById('notes').value
                 }
                 
                 if (!idProduto || !quantity || !location || !responsible || !dataEntrada) {
