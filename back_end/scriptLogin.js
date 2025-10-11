@@ -13,9 +13,5 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
   });
 
   const texto = await resposta.text()
-  document.getElementById("controle").innerHTML = texto
-
-  if(texto.includes("Bem")){
-    window.location.href = "paginaTeste.html"
-  }
+  document.getElementById("controleLogin").innerHTML = texto
 })

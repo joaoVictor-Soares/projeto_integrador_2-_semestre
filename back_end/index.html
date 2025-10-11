@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+     <!-- Header -->
+    <header id="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon" id="logo-icon">SLA</div>
+                    <h1>Sistema de <span id="logo-text">Logística e Armazenamento</span></h1>
+                </div>
+                <div class="user-info" id="user-info" style="display: none;">
+                    <span id="user-name">Usuário</span>
+                    <span class="user-type" id="user-type-display">Tipo</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Página de seleção de usuário -->
+    <section id="user-selection" class="page active">
+        <div class="container">
+            <div class="user-selection-container">
+                <div class="card">
+                    <h2 class="card-title">Selecione seu tipo de usuário</h2>
+                    <div class="user-options">
+                        <div class="user-option" data-user="employee">
+                            <div class="user-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3>Funcionário</h3>
+                            <p>Acesso para registrar movimentações de materiais e consultar estoque</p>
+                            <ul class="user-features">
+                                <li><i class="fas fa-check-circle"></i> Registrar entradas e saídas</li>
+                                <li><i class="fas fa-check-circle"></i> Consultar estoque atual</li>
+                                <li><i class="fas fa-check-circle"></i> Visualizar histórico</li>
+                            </ul>
+                            <div class="btn btn-block">Selecionar Funcionário</div>
+                        </div>
+                        <div class="user-option" data-user="manager">
+                            <div class="user-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h3>Chefe/Gerente</h3>
+                            <p>Acesso completo ao sistema com relatórios, controle e administração</p>
+                            <ul class="user-features">
+                                <li><i class="fas fa-check-circle"></i> Todas as funções do funcionário</li>
+                                <li><i class="fas fa-check-circle"></i> Gerar relatórios detalhados</li>
+                                <li><i class="fas fa-check-circle"></i> Gerenciar usuários</li>
+                                <li><i class="fas fa-check-circle"></i> Aprovações especiais</li>
+                            </ul>
+                            <div class="btn btn-block">Selecionar Gerente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Página de login -->
+    <section id="login" class="page">
+        <div class="container">
+            <div class="login-container">
+                <div class="card">
+                    <div class="login-header">
+                        <div class="login-avatar" id="login-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2 class="card-title">Acesso ao Sistema</h2>
+                        <p class="login-subtitle" id="login-subtitle">Faça login para acessar o sistema</p>
+                        <p id="controleLogin"></p>
+                    </div>
+                    
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username">Usuário</label>
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-user"></i>
+                                <input type="text" id="username" placeholder="Digite seu usuário" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Senha</label>
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-lock"></i>
+                                <input type="password" id="password" placeholder="Digite sua senha" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-type">Tipo de Usuário</label>
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-users"></i>
+                                <select id="user-type" required disabled>
+                                    <option value="">Selecione seu perfil</option>
+                                    <option value="employee">Funcionário</option>
+                                    <option value="manager">Chefe/Gerente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-block" id="login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Entrar no Sistema</span>
+                        </button>
+                    </form>
+                    <div style="text-align: center; margin-top: 1.5rem;">
+                        <a href="#" class="btn btn-secondary" data-page="user-selection">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Voltar</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Página de depósito com modo gerente -->
+    <section id="deposit" class="page">
+        <div class="container">
+            <!-- Dashboard do Gerente (visível apenas para gerentes) -->
+            <div class="manager-dashboard" id="manager-dashboard">
+                <div class="dashboard-header">
+                    <div class="welcome-message">
+                        <h2 id="welcome-user">Bem-vindo, Gerente!</h2>
+                        <p id="welcome-type">Painel de Controle Administrativo</p>
+                    </div>
+                    <div>
+                        <a href="#" class="btn btn-danger" id="logout-btn-manager">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sair</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="manager-controls">
+                    <button class="control-btn active" data-chart="movement">
+                        <i class="fas fa-chart-line"></i>
+                        Movimentações
+                    </button>
+                    <button class="control-btn" data-chart="inventory">
+                        <i class="fas fa-boxes"></i>
+                        Estoque
+                    </button>
+                </div>
+
+                <!-- Métricas Principais -->
+                <div class="manager-metrics">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <div class="metric-trend trend-up">
+                                <i class="fas fa-arrow-up"></i> 12%
+                            </div>
+                        </div>
+                        <div class="metric-value" id="metric-total-value">R$ 284.5K</div>
+                        <div class="metric-label">Valor Total em Estoque</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="metric-trend trend-up">
+                                <i class="fas fa-arrow-up"></i> 8%
+                            </div>
+                        </div>
+                        <div class="metric-value" id="metric-turnover">3.2x</div>
+                        <div class="metric-label">Giro de Estoque (Mensal)</div>
+                    </div>
+                </div>
+
+                <!-- Alertas do Sistema -->
+                <div class="alerts-container">
+                    <h3 style="margin-bottom: 1rem; color: var(--light);">
+                        <i class="fas fa-bell"></i> Alertas do Sistema
+                    </h3>
+                    <div class="alert-item alert-danger">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Estoque Crítico</div>
+                            <div class="alert-message">Componentes Eletrônicos abaixo do nível mínimo</div>
+                        </div>
+                        <button class="btn btn-secondary">Resolver</button>
+                    </div>
+                </div>
+
+                <!-- Gráficos e Dashboard -->
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Movimentações por Categoria</h3>
+                        </div>
+                        <canvas id="categoryChart" height="250"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabela de Movimentações -->
+                <div class="card manager-card">
+                    <h2 class="card-title manager-title">Movimentações Recentes</h2>
+                    
+                    <table class="advanced-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Usuário</th>
+                                <th>Tipo</th>
+                                <th>Material</th>
+                                <th>Quantidade</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>15/10/2023 14:30</td>
+                                <td>João Silva</td>
+                                <td><span class="badge badge-success"><i class="fas fa-arrow-down"></i> Entrada</span></td>
+                                <td>Ferramentas</td>
+                                <td>50</td>
+                                <td><span class="status-badge status-low">Concluído</span></td>
+                            </tr>
+                            <tr>
+                                <td>15/10/2023 11:15</td>
+                                <td>Maria Santos</td>
+                                <td><span class="badge badge-danger"><i class="fas fa-arrow-up"></i> Saída</span></td>
+                                <td>Componentes Eletrônicos</td>
+                                <td>25</td>
+                                <td><span class="status-badge status-high">Pendente</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Relatórios Rápidos -->
+                <div class="card manager-card">
+                    <h2 class="card-title manager-title">Relatórios</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <button class="btn btn-manager">
+                            <i class="fas fa-file-pdf"></i>
+                            PDF Completo
+                        </button>
+                        <button class="btn btn-manager">
+                            <i class="fas fa-file-excel"></i>
+                            Planilha Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface normal (para funcionários) -->
+            <div id="employee-interface">
+                <!-- Conteúdo normal do funcionário -->
+                <div class="progress-steps">
+                    <div class="step completed">
+                        <div class="step-icon"><i class="fas fa-check"></i></div>
+                        <div class="step-label">Tipo de Usuário</div>
+                    </div>
+                    <div class="step completed">
+                        <div class="step-icon"><i class="fas fa-check"></i></div>
+                        <div class="step-label">Login</div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon">3</div>
+                        <div class="step-label">Controle</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-header">
+                    <div class="welcome-message">
+                        <h2 id="welcome-user-employee">Bem-vindo, Usuário!</h2>
+                        <p id="welcome-type-employee">Você está logado como <span id="user-role">Funcionário</span></p>
+                    </div>
+                    <div>
+                        <a href="#" class="btn btn-danger" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sair</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Controle de Materiais -->
+                <div class="card">
+                    <h2 class="card-title">Controle de Materiais</h2>
+                    
+                    <div class="transaction-type">
+                        <button class="btn active" id="deposit-btn">
+                            <i class="fas fa-boxes"></i>
+                            <span>Entrada de Material</span>
+                        </button>
+                        <button class="btn btn-secondary" id="withdrawal-btn">
+                            <i class="fas fa-dolly"></i>
+                            <span>Retirada de Material</span>
+                        </button>
+                    </div>
+                    
+                    <form id="transaction-form">
+                        <div class="transaction-form">
+                            <div class="form-group">
+                                <label for="produto">ID do produto</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-box"></i>
+                                    <input type="number" id="idProduto" min="1" placeholder="Digite o id do produto">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quantity">Quantidade</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-hashtag"></i>
+                                    <input type="number" id="quantity" min="1" placeholder="Digite a quantidade" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="location">Localização</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <select id="location" required>
+                                        <option value="">Selecione uma localização</option>
+                                        <option value="almoxarifado-a">Almoxarifado A</option>
+                                        <option value="almoxarifado-b">Almoxarifado B</option>
+                                        <option value="setor-producao">Setor de Produção</option>
+                                        <option value="setor-manutencao">Setor de Manutenção</option>
+                                        <option value="setor-embalagem">Setor de Embalagem</option>
+                                    </select>
+                                </div>
+                            </div>
+                                 <div class="form-group">
+                                <label for="location">Data de entrada</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <input type="date"id="dataEntrada" placeholder="Data de entrada do material">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="responsible">Responsável</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-user-check"></i>
+                                    <input type="text" id="responsible" placeholder="Nome do responsável" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="notes">Observações</label>
+                                <div class="input-with-icon">
+                                    <i class="input-icon fas fa-sticky-note"></i>
+                                    <textarea id="notes" rows="3" placeholder="Adicione observações se necessário" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-block btn-success" id="submit-btn">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Registrar Entrada</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Histórico de Movimentações -->
+                <div class="card">
+                    <h2 class="card-title">Histórico de Movimentações</h2>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>Material</th>
+                                <th>Quantidade</th>
+                                <th>Localização</th>
+                                <th>Responsável</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                            <!-- Histórico será preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="scriptKarol.js"></script>
+</body>
+</html>

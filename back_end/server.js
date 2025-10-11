@@ -45,6 +45,10 @@ app.post('/login', (req, res) => {
 
 });
 
+app.post('/estoqueEntrada', (req, res) =>{
+  const {}
+})
+
 app.listen(3000, () => {
   console.log("Servidor rodando em http://localhost:3000");
 });
