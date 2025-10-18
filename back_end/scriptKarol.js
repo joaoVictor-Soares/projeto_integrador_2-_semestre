@@ -2,6 +2,7 @@
         let currentUser = null;
         let userType = null;
         let transactionHistory = [];
+        let retirada = false;
 
         // Navegação entre páginas
         function goToPage(pageId) {
@@ -312,10 +313,14 @@
             // Botões de transação
             document.getElementById('deposit-btn').addEventListener('click', function() {
                 setTransactionType('deposit');
+                retirada = false;
+                alert("Entrada")
             });
             
             document.getElementById('withdrawal-btn').addEventListener('click', function() {
                 setTransactionType('withdrawal');
+                retirada = true;
+                alert("Retirada")
             });
             
             // Controles de gráficos do gerente
@@ -348,29 +353,45 @@
             // Transação
             document.getElementById('transaction-form').addEventListener('submit', async(e) => {
                 e.preventDefault();
+
+                const idProduto = document.getElementById('idProduto').value;
+                const quantity = document.getElementById('quantity').value;
+                const location = document.getElementById('location').value;
+                const responsible = document.getElementById('responsible').value;
+                const dataEntrada = document.getElementById('dataEntrada'). value;
+                const observacao = document.getElementById('notes').value;
                 
                 const dadosEntradaEstoque = {
-
-                idProduto : document.getElementById('idProduto').value,
-                quantity: document.getElementById('quantity').value,
-                location: document.getElementById('location').value,
-                responsible: document.getElementById('responsible').value,
-                dataEntrada: document.getElementById('dataEntrada'). value
-                observacao: document.getElementById('notes').value
+                    idProduto,
+                    quantity,
+                    location,
+                    responsible,
+                    dataEntrada,
+                    observacao
                 }
                 
-                if (!idProduto || !quantity || !location || !responsible || !dataEntrada) {
+                if (!idProduto || !quantity || !location || !responsible || !dataEntrada || !observacao) {
                     alert('Por favor, preencha todos os campos obrigatórios!');
                     return;
                 }
                 
                 // dados enviados para o servidor
-                const respostaEntradaEstoque = await fetch ("http://localhost:3000/estoqueEntrada", {
-                    method:"POST",
-                    headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dados)
-                });
-                 const textoEntradaEstoque = await respostaEntradaEstoque.text
+                if(!retirada){
+                    const respostaEntradaEstoque = await fetch ("http://localhost:3000/estoqueEntrada", {
+                        method:"POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(dadosEntradaEstoque)
+                    });
+                 }
+                 else if(retirada){
+                    const respostaEntradaEstoque = await fetch ("http://localhost:3000/estoqueRetirada", {
+                        method:"POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(dadosEntradaEstoque)
+                        });
+                 }
+            
+                 const textoEntradaEstoque = await respostaEntradaEstoque.text()
                  alert(textoEntradaEstoque)
                 loadHistory(); // Recarregar histórico após nova movimentação
             });
