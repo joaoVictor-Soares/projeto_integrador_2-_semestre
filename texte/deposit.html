@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depósito - SLA Sistema de Logística e Armazenamento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-dark: #2563eb;
+            --light: #f8fafc;
+            --dark: #0a0f1c;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --manager-accent: #3b82f6;
+            --manager-gradient: linear-gradient(135deg, #3b82f6, #10b981);
+            --employee-accent: #3b82f6;
+            --employee-gradient: linear-gradient(135deg, #60a5fa, #10b981);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid transparent;
+        }
+
+        header.manager-mode {
+            border-bottom-color: var(--manager-accent);
+        }
+
+        header.employee-mode {
+            border-bottom-color: var(--employee-accent);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .logo-icon.manager {
+            background: var(--manager-gradient);
+        }
+
+        .logo-icon.employee {
+            background: var(--employee-gradient);
+        }
+
+        .logo h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--light);
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--accent-light), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        .user-info.manager {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--manager-accent);
+        }
+
+        .user-info.employee {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--employee-accent);
+        }
+
+        .user-type {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .user-type.manager {
+            background: var(--manager-gradient);
+        }
+
+        .user-type.employee {
+            background: var(--employee-gradient);
+        }
+
+        .page {
+            flex: 1;
+            padding: 2.5rem 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .card.manager-card::before {
+            background: var(--manager-gradient);
+        }
+
+        .card.employee-card::before {
+            background: var(--employee-gradient);
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+            text-align: center;
+            font-weight: 800;
+            position: relative;
+        }
+
+        .card-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            margin: 12px auto 0;
+            border-radius: 3px;
+        }
+
+        .card-title.manager-title::after {
+            background: var(--manager-gradient);
+        }
+
+        .card-title.employee-title::after {
+            background: var(--employee-gradient);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background-color: rgba(15, 23, 42, 0.7);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #2d3447 100%);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #0da271 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        }
+
+        /* Dashboard do Gerente */
+        .manager-dashboard {
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-message h2 {
+            font-size: 1.8rem;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+
+        .manager-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: var(--manager-gradient);
+            border-color: var(--manager-accent);
+            color: white;
+        }
+
+        .manager-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, rgba(30, 41, 59, 0.9) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--manager-gradient);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--manager-gradient);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--manager-accent);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .alerts-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--light);
+        }
+
+        .advanced-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .advanced-table th, .advanced-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .advanced-table th {
+            background: var(--manager-gradient);
+            font-weight: 700;
+            color: white;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .advanced-table tr:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-low {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-high {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        /* Interface do Funcionário - Melhorada */
+        .employee-interface {
+            display: none;
+        }
+
+        .employee-dashboard {
+            display: none;
+        }
+
+        .employee-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .employee-section.active {
+            display: block;
+        }
+
+        .employee-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .employee-control-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .employee-control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .employee-control-btn.active {
+            background: var(--employee-gradient);
+            border-color: var(--employee-accent);
+            color: white;
+        }
+
+        .employee-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .employee-metric-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, rgba(30, 41, 59, 0.9) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .employee-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--employee-gradient);
+        }
+
+        .employee-metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .employee-metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--employee-gradient);
+        }
+
+        .employee-metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--employee-accent);
+        }
+
+        .employee-metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .employee-quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .employee-quick-action-btn {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--employee-accent);
+            color: var(--employee-accent);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .employee-quick-action-btn:hover {
+            background: var(--employee-accent);
+            color: white;
+        }
+
+        /* Seções específicas */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .transaction-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .transaction-type {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .transaction-type .btn.active {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--success) 100%);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .inventory-item {
+            background: linear-gradient(135deg, var(--secondary) 0%, rgba(30, 41, 59, 0.9) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .inventory-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--employee-gradient);
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .inventory-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--employee-gradient);
+        }
+
+        .inventory-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--employee-accent);
+        }
+
+        .inventory-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stock-level {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .stock-level-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .stock-high { background: var(--success); }
+        .stock-medium { background: var(--warning); }
+        .stock-low { background: var(--danger); }
+
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .quick-action-btn {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--manager-accent);
+            color: var(--manager-accent);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--manager-accent);
+            color: white;
+        }
+
+        /* Estilos para manutenção */
+        .maintenance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .maintenance-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, rgba(30, 41, 59, 0.9) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .maintenance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--warning), var(--danger));
+        }
+
+        .maintenance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .maintenance-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--warning) 0%, var(--danger) 100%);
+        }
+
+        .maintenance-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--warning);
+        }
+
+        .maintenance-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-low { background: var(--success); width: 25%; }
+        .progress-medium { background: var(--warning); width: 50%; }
+        .progress-high { background: var(--danger); width: 75%; }
+
+        /* Botão de PDF */
+        .pdf-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .transaction-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .transaction-type {
+                flex-direction: column;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .manager-metrics, .employee-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .inventory-grid, .maintenance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions, .employee-quick-actions {
+                flex-direction: column;
+            }
+
+            .manager-controls, .employee-controls {
+                flex-direction: column;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon" id="logo-icon">SLA</div>
+                    <h1>Sistema de <span>Logística e Armazenamento</span></h1>
+                </div>
+                <div class="user-info" id="user-info">
+                    <span id="user-name">Usuário</span>
+                    <span class="user-type" id="user-type-display">Funcionário</span>
+                    <a href="#" class="btn btn-danger" id="logout-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="page">
+        <div class="container">
+            <!-- Dashboard do Gerente -->
+            <div class="manager-dashboard" id="manager-dashboard">
+                <div class="dashboard-header">
+                    <div class="welcome-message">
+                        <h2 id="welcome-user">Bem-vindo, Gerente!</h2>
+                        <p>Painel de Controle Administrativo</p>
+                    </div>
+                    <div class="pdf-container">
+                        <button class="btn btn-pdf" id="generate-pdf-btn">
+                            <i class="fas fa-file-pdf"></i>
+                            Gerar Relatório PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="manager-controls">
+                    <button class="control-btn active" id="btn-movimentacoes">
+                        <i class="fas fa-chart-line"></i>
+                        Movimentações
+                    </button>
+                    <button class="control-btn" id="btn-estoque">
+                        <i class="fas fa-boxes"></i>
+                        Estoque
+                    </button>
+                    <button class="control-btn" id="btn-entrada-materiais">
+                        <i class="fas fa-arrow-down"></i>
+                        Entrada de Materiais
+                    </button>
+                    <button class="control-btn" id="btn-manutencao">
+                        <i class="fas fa-tools"></i>
+                        Manutenção
+                    </button>
+                </div>
+
+                <!-- Seção de Movimentações -->
+                <div class="section active" id="section-movimentacoes">
+                    <!-- Métricas Principais -->
+                    <div class="manager-metrics">
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-warehouse"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">R$ 284.5K</div>
+                            <div class="metric-label">Valor Total em Estoque</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">3.2x</div>
+                            <div class="metric-label">Giro de Estoque</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-box-open"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">1.247</div>
+                            <div class="metric-label">Itens em Estoque</div>
+                        </div>
+                    </div>
+
+                    <!-- Alertas do Sistema -->
+                    <div class="alerts-container">
+                        <h3 style="margin-bottom: 1rem; color: var(--light);">
+                            <i class="fas fa-bell"></i> Alertas do Sistema
+                        </h3>
+                        <div class="alert-item">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Estoque Crítico</div>
+                                <div class="alert-message">Componentes Eletrônicos abaixo do nível mínimo</div>
+                            </div>
+                            <button class="btn btn-secondary">Resolver</button>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos -->
+                    <div class="dashboard-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Movimentações por Categoria</h3>
+                            </div>
+                            <canvas id="categoryChart" height="250"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Status do Estoque</h3>
+                            </div>
+                            <canvas id="inventoryChart" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Movimentações -->
+                    <div class="card manager-card">
+                        <h2 class="card-title manager-title">Movimentações Recentes</h2>
+                        
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Usuário</th>
+                                    <th>Tipo</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>15/10/2023 14:30</td>
+                                    <td>João Silva</td>
+                                    <td><span class="badge badge-success"><i class="fas fa-arrow-down"></i> Entrada</span></td>
+                                    <td>Ferramentas</td>
+                                    <td>50</td>
+                                    <td><span class="status-badge status-low">Concluído</span></td>
+                                </tr>
+                                <tr>
+                                    <td>15/10/2023 11:15</td>
+                                    <td>Maria Santos</td>
+                                    <td><span class="badge badge-danger"><i class="fas fa-arrow-up"></i> Saída</span></td>
+                                    <td>Componentes Eletrônicos</td>
+                                    <td>25</td>
+                                    <td><span class="status-badge status-high">Pendente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Seção de Estoque -->
+                <div class="section" id="section-estoque">
+                    <div class="card manager-card">
+                        <h2 class="card-title manager-title">Controle de Estoque</h2>
+                        
+                        <div class="inventory-grid">
+                            <div class="inventory-item">
+                                <div class="inventory-header">
+                                    <div class="inventory-icon">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                </div>
+                                <div class="inventory-value">850</div>
+                                <div class="inventory-label">Ferramentas em Estoque</div>
+                                <div class="stock-level">
+                                    <div class="stock-level-fill stock-high" style="width: 85%"></div>
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn" onclick="alert('Relatório de Ferramentas gerado!')">
+                                        <i class="fas fa-chart-bar"></i> Relatório
+                                    </button>
+                                    <button class="quick-action-btn" onclick="alert('Ajuste de estoque aberto!')">
+                                        <i class="fas fa-edit"></i> Ajustar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="inventory-item">
+                                <div class="inventory-header">
+                                    <div class="inventory-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                </div>
+                                <div class="inventory-value">45</div>
+                                <div class="inventory-label">Componentes Eletrônicos</div>
+                                <div class="stock-level">
+                                    <div class="stock-level-fill stock-low" style="width: 15%"></div>
+                                </div>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn" onclick="alert('Pedido de compra realizado!')">
+                                        <i class="fas fa-shopping-cart"></i> Comprar
+                                    </button>
+                                    <button class="quick-action-btn" onclick="alert('Alerta configurado!')">
+                                        <i class="fas fa-bell"></i> Alertar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card manager-card">
+                            <h3 class="chart-title">Itens com Estoque Baixo</h3>
+                            <table class="advanced-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Estoque Atual</th>
+                                        <th>Mínimo</th>
+                                        <th>Status</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Componentes Eletrônicos</td>
+                                        <td>45</td>
+                                        <td>100</td>
+                                        <td><span class="badge badge-danger">Crítico</span></td>
+                                        <td><button class="btn btn-warning">Comprar</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cabos USB</td>
+                                        <td>28</td>
+                                        <td>50</td>
+                                        <td><span class="badge badge-warning">Atenção</span></td>
+                                        <td><button class="btn btn-secondary">Monitorar</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Entrada de Materiais -->
+                <div class="section" id="section-entrada-materiais">
+                    <div class="card manager-card">
+                        <h2 class="card-title manager-title">Entrada de Materiais</h2>
+                        
+                        <div class="transaction-type">
+                            <button class="btn active" id="manager-deposit-btn">
+                                <i class="fas fa-boxes"></i>
+                                <span>Entrada de Material</span>
+                            </button>
+                            <button class="btn btn-secondary" id="manager-withdrawal-btn">
+                                <i class="fas fa-dolly"></i>
+                                <span>Retirada de Material</span>
+                            </button>
+                        </div>
+                        
+                        <form id="manager-transaction-form">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="manager-material">Material</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-box"></i>
+                                        <select id="manager-material" required>
+                                            <option value="">Selecione um material</option>
+                                            <option value="ferramentas">Ferramentas</option>
+                                            <option value="eletronicos">Componentes Eletrônicos</option>
+                                            <option value="materiais-escritorio">Materiais de Escritório</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="manager-quantity">Quantidade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-hashtag"></i>
+                                        <input type="number" id="manager-quantity" min="1" placeholder="Digite a quantidade" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="manager-location">Localização</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-map-marker-alt"></i>
+                                        <select id="manager-location" required>
+                                            <option value="">Selecione uma localização</option>
+                                            <option value="almoxarifado-a">Almoxarifado A</option>
+                                            <option value="almoxarifado-b">Almoxarifado B</option>
+                                            <option value="setor-producao">Setor de Produção</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="manager-responsible">Responsável</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-user-check"></i>
+                                        <input type="text" id="manager-responsible" placeholder="Nome do responsável" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="manager-priority">Prioridade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-flag"></i>
+                                        <select id="manager-priority" required>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="manager-cost">Custo Unitário (R$)</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-dollar-sign"></i>
+                                        <input type="number" id="manager-cost" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="manager-notes">Observações</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-sticky-note"></i>
+                                        <textarea id="manager-notes" rows="3" placeholder="Adicione observações se necessário"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-block btn-success" id="manager-submit-btn">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Registrar Entrada</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Seção de Manutenção -->
+                <div class="section" id="section-manutencao">
+                    <div class="manager-metrics">
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">12</div>
+                            <div class="metric-label">Solicitações de Manutenção</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">5</div>
+                            <div class="metric-label">Em Andamento</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">47</div>
+                            <div class="metric-label">Concluídas este Mês</div>
+                        </div>
+                    </div>
+
+                    <div class="maintenance-grid">
+                        <div class="maintenance-card">
+                            <div class="maintenance-header">
+                                <div class="maintenance-icon">
+                                    <i class="fas fa-warehouse"></i>
+                                </div>
+                            </div>
+                            <div class="maintenance-value">3</div>
+                            <div class="maintenance-label">Equipamentos Críticos</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-high"></div>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="alert('Ordem de serviço criada!')">
+                                    <i class="fas fa-wrench"></i> Priorizar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="maintenance-card">
+                            <div class="maintenance-header">
+                                <div class="maintenance-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                            </div>
+                            <div class="maintenance-value">8</div>
+                            <div class="maintenance-label">Veículos em Manutenção</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-medium"></div>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" onclick="alert('Agendamento realizado!')">
+                                    <i class="fas fa-calendar"></i> Agendar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card manager-card">
+                        <h2 class="card-title manager-title">Ordens de Serviço em Andamento</h2>
+                        
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>OS #</th>
+                                    <th>Equipamento</th>
+                                    <th>Tipo</th>
+                                    <th>Responsável</th>
+                                    <th>Prioridade</th>
+                                    <th>Progresso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OS-2023-001</td>
+                                    <td>Empilhadeira Elétrica</td>
+                                    <td>Corretiva</td>
+                                    <td>Carlos Silva</td>
+                                    <td><span class="badge badge-danger">Alta</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill progress-high"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>OS-2023-002</td>
+                                    <td>Esteira Transportadora</td>
+                                    <td>Preventiva</td>
+                                    <td>Ana Costa</td>
+                                    <td><span class="badge badge-warning">Média</span></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill progress-medium"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card manager-card">
+                        <h2 class="card-title manager-title">Nova Solicitação de Manutenção</h2>
+                        
+                        <form id="maintenance-form">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="maintenance-equipment">Equipamento</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-toolbox"></i>
+                                        <select id="maintenance-equipment" required>
+                                            <option value="">Selecione o equipamento</option>
+                                            <option value="empilhadeira">Empilhadeira Elétrica</option>
+                                            <option value="esteira">Esteira Transportadora</option>
+                                            <option value="refrigeracao">Sistema de Refrigeração</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="maintenance-type">Tipo de Manutenção</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-wrench"></i>
+                                        <select id="maintenance-type" required>
+                                            <option value="preventiva">Preventiva</option>
+                                            <option value="corretiva">Corretiva</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="maintenance-priority">Prioridade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-flag"></i>
+                                        <select id="maintenance-priority" required>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="maintenance-description">Descrição do Problema</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-sticky-note"></i>
+                                        <textarea id="maintenance-description" rows="3" placeholder="Descreva o problema ou serviço necessário" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-block btn-warning">
+                                <i class="fas fa-tools"></i>
+                                <span>Abrir Ordem de Serviço</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface do Funcionário - MELHORADA -->
+            <div class="employee-dashboard" id="employee-dashboard">
+                <div class="dashboard-header">
+                    <div class="welcome-message">
+                        <h2 id="welcome-employee">Bem-vindo, Funcionário!</h2>
+                        <p>Painel de Controle do Funcionário</p>
+                    </div>
+                </div>
+
+                <div class="employee-controls">
+                    <button class="employee-control-btn active" id="employee-btn-solicitacoes">
+                        <i class="fas fa-clipboard-list"></i>
+                        Minhas Solicitações
+                    </button>
+                    <button class="employee-control-btn" id="employee-btn-estoque">
+                        <i class="fas fa-boxes"></i>
+                        Consultar Estoque
+                    </button>
+                    <button class="employee-control-btn" id="employee-btn-movimentacao">
+                        <i class="fas fa-exchange-alt"></i>
+                        Movimentação
+                    </button>
+                    <button class="employee-control-btn" id="employee-btn-manutencao">
+                        <i class="fas fa-tools"></i>
+                        Manutenção
+                    </button>
+                    <button class="employee-control-btn" id="employee-btn-nova-solicitacao">
+                        <i class="fas fa-plus-circle"></i>
+                        Nova Solicitação
+                    </button>
+                </div>
+
+                <!-- Seção de Solicitações do Funcionário -->
+                <div class="employee-section active" id="employee-section-solicitacoes">
+                    <div class="employee-metrics">
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">3</div>
+                            <div class="employee-metric-label">Solicitações Pendentes</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">18</div>
+                            <div class="employee-metric-label">Solicitações Aprovadas</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">24</div>
+                            <div class="employee-metric-label">Itens Solicitados</div>
+                        </div>
+                    </div>
+
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Minhas Solicitações Recentes</h2>
+                        
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Projeto</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#SOL-2023-001</td>
+                                    <td>15/10/2023</td>
+                                    <td>Ferramentas</td>
+                                    <td>5</td>
+                                    <td>Manutenção Preventiva</td>
+                                    <td><span class="badge badge-success">Aprovado</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 0.5rem;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#SOL-2023-002</td>
+                                    <td>14/10/2023</td>
+                                    <td>Componentes Eletrônicos</td>
+                                    <td>10</td>
+                                    <td>Reparo de Equipamentos</td>
+                                    <td><span class="badge badge-warning">Em Análise</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 0.5rem;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#SOL-2023-003</td>
+                                    <td>13/10/2023</td>
+                                    <td>EPI - Luvas</td>
+                                    <td>2</td>
+                                    <td>Segurança do Trabalho</td>
+                                    <td><span class="badge badge-danger">Rejeitado</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary" style="padding: 0.5rem;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Seção de Estoque do Funcionário -->
+                <div class="employee-section" id="employee-section-estoque">
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Consulta de Estoque</h2>
+                        
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-search"></i>
+                                <input type="text" id="employee-search-stock" placeholder="Buscar por nome do material...">
+                            </div>
+                        </div>
+
+                        <div class="inventory-grid">
+                            <div class="inventory-item">
+                                <div class="inventory-header">
+                                    <div class="inventory-icon">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                </div>
+                                <div class="inventory-value">850</div>
+                                <div class="inventory-label">Ferramentas em Estoque</div>
+                                <div class="stock-level">
+                                    <div class="stock-level-fill stock-high" style="width: 85%"></div>
+                                </div>
+                                <div class="employee-quick-actions">
+                                    <button class="employee-quick-action-btn" onclick="solicitarMaterial('Ferramentas')">
+                                        <i class="fas fa-cart-plus"></i> Solicitar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="inventory-item">
+                                <div class="inventory-header">
+                                    <div class="inventory-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                </div>
+                                <div class="inventory-value">45</div>
+                                <div class="inventory-label">Componentes Eletrônicos</div>
+                                <div class="stock-level">
+                                    <div class="stock-level-fill stock-low" style="width: 15%"></div>
+                                </div>
+                                <div class="employee-quick-actions">
+                                    <button class="employee-quick-action-btn" onclick="solicitarMaterial('Componentes Eletrônicos')">
+                                        <i class="fas fa-cart-plus"></i> Solicitar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="inventory-item">
+                                <div class="inventory-header">
+                                    <div class="inventory-icon">
+                                        <i class="fas fa-print"></i>
+                                    </div>
+                                </div>
+                                <div class="inventory-value">320</div>
+                                <div class="inventory-label">Materiais de Escritório</div>
+                                <div class="stock-level">
+                                    <div class="stock-level-fill stock-medium" style="width: 65%"></div>
+                                </div>
+                                <div class="employee-quick-actions">
+                                    <button class="employee-quick-action-btn" onclick="solicitarMaterial('Materiais de Escritório')">
+                                        <i class="fas fa-cart-plus"></i> Solicitar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Movimentação do Funcionário -->
+                <div class="employee-section" id="employee-section-movimentacao">
+                    <div class="employee-metrics">
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">12</div>
+                            <div class="employee-metric-label">Entradas Este Mês</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">8</div>
+                            <div class="employee-metric-label">Saídas Este Mês</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">47</div>
+                            <div class="employee-metric-label">Itens Movimentados</div>
+                        </div>
+                    </div>
+
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Movimentação de Materiais</h2>
+                        
+                        <div class="transaction-type">
+                            <button class="btn active" id="employee-deposit-btn">
+                                <i class="fas fa-boxes"></i>
+                                <span>Entrada de Material</span>
+                            </button>
+                            <button class="btn btn-secondary" id="employee-withdrawal-btn">
+                                <i class="fas fa-dolly"></i>
+                                <span>Retirada de Material</span>
+                            </button>
+                        </div>
+                        
+                        <form id="employee-transaction-form">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="employee-transaction-material">Material</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-box"></i>
+                                        <select id="employee-transaction-material" required>
+                                            <option value="">Selecione um material</option>
+                                            <option value="ferramentas">Ferramentas</option>
+                                            <option value="eletronicos">Componentes Eletrônicos</option>
+                                            <option value="materiais-escritorio">Materiais de Escritório</option>
+                                            <option value="epi">Equipamentos de Proteção</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-transaction-quantity">Quantidade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-hashtag"></i>
+                                        <input type="number" id="employee-transaction-quantity" min="1" placeholder="Digite a quantidade" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-transaction-location">Localização</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-map-marker-alt"></i>
+                                        <select id="employee-transaction-location" required>
+                                            <option value="">Selecione uma localização</option>
+                                            <option value="almoxarifado-a">Almoxarifado A</option>
+                                            <option value="almoxarifado-b">Almoxarifado B</option>
+                                            <option value="setor-producao">Setor de Produção</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-transaction-project">Projeto/Atividade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-project-diagram"></i>
+                                        <input type="text" id="employee-transaction-project" placeholder="Nome do projeto ou atividade" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="employee-transaction-priority">Prioridade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-flag"></i>
+                                        <select id="employee-transaction-priority" required>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="employee-transaction-notes">Observações</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-sticky-note"></i>
+                                        <textarea id="employee-transaction-notes" rows="3" placeholder="Adicione observações se necessário"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-block btn-success" id="employee-transaction-submit-btn">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Registrar Entrada</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Minhas Movimentações Recentes</h2>
+                        
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Material</th>
+                                    <th>Quantidade</th>
+                                    <th>Localização</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>15/10/2023 14:30</td>
+                                    <td><span class="badge badge-success"><i class="fas fa-arrow-down"></i> Entrada</span></td>
+                                    <td>Ferramentas</td>
+                                    <td>5</td>
+                                    <td>Almoxarifado A</td>
+                                    <td><span class="status-badge status-low">Concluído</span></td>
+                                </tr>
+                                <tr>
+                                    <td>15/10/2023 11:15</td>
+                                    <td><span class="badge badge-danger"><i class="fas fa-arrow-up"></i> Saída</span></td>
+                                    <td>Componentes Eletrônicos</td>
+                                    <td>10</td>
+                                    <td>Setor de Produção</td>
+                                    <td><span class="status-badge status-high">Pendente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Seção de Manutenção do Funcionário -->
+                <div class="employee-section" id="employee-section-manutencao">
+                    <div class="employee-metrics">
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">5</div>
+                            <div class="employee-metric-label">Solicitações de Manutenção</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">2</div>
+                            <div class="employee-metric-label">Em Andamento</div>
+                        </div>
+                        <div class="employee-metric-card">
+                            <div class="employee-metric-header">
+                                <div class="employee-metric-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="employee-metric-value">18</div>
+                            <div class="employee-metric-label">Concluídas</div>
+                        </div>
+                    </div>
+
+                    <div class="maintenance-grid">
+                        <div class="maintenance-card">
+                            <div class="maintenance-header">
+                                <div class="maintenance-icon">
+                                    <i class="fas fa-warehouse"></i>
+                                </div>
+                            </div>
+                            <div class="maintenance-value">2</div>
+                            <div class="maintenance-label">Equipamentos Críticos</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-high"></div>
+                            </div>
+                            <div class="employee-quick-actions">
+                                <button class="employee-quick-action-btn" onclick="solicitarManutencao('Equipamentos Críticos')">
+                                    <i class="fas fa-wrench"></i> Solicitar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="maintenance-card">
+                            <div class="maintenance-header">
+                                <div class="maintenance-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                            </div>
+                            <div class="maintenance-value">3</div>
+                            <div class="maintenance-label">Veículos em Manutenção</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-medium"></div>
+                            </div>
+                            <div class="employee-quick-actions">
+                                <button class="employee-quick-action-btn" onclick="solicitarManutencao('Veículos')">
+                                    <i class="fas fa-calendar"></i> Agendar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Minhas Solicitações de Manutenção</h2>
+                        
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>OS #</th>
+                                    <th>Equipamento</th>
+                                    <th>Tipo</th>
+                                    <th>Data</th>
+                                    <th>Prioridade</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>OS-2023-015</td>
+                                    <td>Empilhadeira Elétrica</td>
+                                    <td>Corretiva</td>
+                                    <td>15/10/2023</td>
+                                    <td><span class="badge badge-danger">Alta</span></td>
+                                    <td><span class="status-badge status-high">Pendente</span></td>
+                                </tr>
+                                <tr>
+                                    <td>OS-2023-014</td>
+                                    <td>Esteira Transportadora</td>
+                                    <td>Preventiva</td>
+                                    <td>12/10/2023</td>
+                                    <td><span class="badge badge-warning">Média</span></td>
+                                    <td><span class="status-badge status-low">Concluído</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Nova Solicitação de Manutenção</h2>
+                        
+                        <form id="employee-maintenance-form">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="employee-maintenance-equipment">Equipamento</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-toolbox"></i>
+                                        <select id="employee-maintenance-equipment" required>
+                                            <option value="">Selecione o equipamento</option>
+                                            <option value="empilhadeira">Empilhadeira Elétrica</option>
+                                            <option value="esteira">Esteira Transportadora</option>
+                                            <option value="refrigeracao">Sistema de Refrigeração</option>
+                                            <option value="computador">Computador</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-maintenance-type">Tipo de Manutenção</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-wrench"></i>
+                                        <select id="employee-maintenance-type" required>
+                                            <option value="preventiva">Preventiva</option>
+                                            <option value="corretiva">Corretiva</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-maintenance-priority">Prioridade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-flag"></i>
+                                        <select id="employee-maintenance-priority" required>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="employee-maintenance-description">Descrição do Problema</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-sticky-note"></i>
+                                        <textarea id="employee-maintenance-description" rows="3" placeholder="Descreva o problema ou serviço necessário" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-block btn-warning">
+                                <i class="fas fa-tools"></i>
+                                <span>Solicitar Manutenção</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Seção de Nova Solicitação -->
+                <div class="employee-section" id="employee-section-nova-solicitacao">
+                    <div class="card employee-card">
+                        <h2 class="card-title employee-title">Nova Solicitação de Material</h2>
+                        
+                        <form id="employee-request-form">
+                            <div class="transaction-form">
+                                <div class="form-group">
+                                    <label for="employee-material">Material Solicitado</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-box"></i>
+                                        <select id="employee-material" required>
+                                            <option value="">Selecione um material</option>
+                                            <option value="ferramentas">Ferramentas</option>
+                                            <option value="eletronicos">Componentes Eletrônicos</option>
+                                            <option value="materiais-escritorio">Materiais de Escritório</option>
+                                            <option value="epi">Equipamentos de Proteção</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-quantity">Quantidade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-hashtag"></i>
+                                        <input type="number" id="employee-quantity" min="1" placeholder="Digite a quantidade" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-project">Projeto/Atividade</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-project-diagram"></i>
+                                        <input type="text" id="employee-project" placeholder="Nome do projeto ou atividade" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employee-urgency">Urgência</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-exclamation-triangle"></i>
+                                        <select id="employee-urgency" required>
+                                            <option value="baixa">Baixa</option>
+                                            <option value="media">Média</option>
+                                            <option value="alta">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="employee-justification">Justificativa</label>
+                                    <div class="input-with-icon">
+                                        <i class="input-icon fas fa-sticky-note"></i>
+                                        <textarea id="employee-justification" rows="3" placeholder="Explique a necessidade deste material" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-block btn-success">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Enviar Solicitação</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface Básica do Funcionário (Fallback) -->
+            <div class="employee-interface" id="employee-interface">
+                <div class="card">
+                    <h2 class="card-title">Interface do Funcionário</h2>
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                        Esta é a interface do funcionário. Faça login como gerente para acessar o dashboard administrativo.
+                    </p>
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" onclick="location.reload()">
+                            <i class="fas fa-sync-alt"></i>
+                            Recarregar Página
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // VERIFICAR LOGIN E CONFIGURAR INTERFACE
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== VERIFICANDO LOGIN ===');
+            
+            // Para teste, defina manualmente no console:
+            // localStorage.setItem('loggedIn', 'true');
+            // localStorage.setItem('userType', 'employee'); // ou 'manager'
+            // localStorage.setItem('username', 'João Silva');
+            
+            if (localStorage.getItem('loggedIn') !== 'true') {
+                alert('⚠️ Você precisa fazer login primeiro!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const username = localStorage.getItem('username') || 'Usuário';
+            const userType = localStorage.getItem('userType') || 'employee';
+
+            console.log('Configurando interface para:', username, 'tipo:', userType);
+
+            // Atualizar informações do usuário
+            document.getElementById('user-name').textContent = username;
+            
+            const userTypeDisplay = userType === 'manager' ? 'Gerente' : 'Funcionário';
+            document.getElementById('user-type-display').textContent = userTypeDisplay;
+            document.getElementById('welcome-user').textContent = `Bem-vindo, ${username}!`;
+            document.getElementById('welcome-employee').textContent = `Bem-vindo, ${username}!`;
+
+            // Configurar interface baseada no tipo de usuário
+            if (userType === 'manager') {
+                console.log('🎯 Ativando modo GERENTE');
+                activateManagerMode();
+                initializeManagerCharts();
+                setupManagerEventListeners();
+            } else {
+                console.log('👤 Ativando modo FUNCIONÁRIO');
+                activateEmployeeMode();
+            }
+
+            setupCommonEventListeners();
+        });
+
+        function activateManagerMode() {
+            const header = document.getElementById('main-header');
+            const logoIcon = document.getElementById('logo-icon');
+            const userInfo = document.getElementById('user-info');
+            const userTypeDisplay = document.getElementById('user-type-display');
+            
+            header.classList.add('manager-mode');
+            logoIcon.classList.add('manager');
+            userInfo.classList.add('manager');
+            userTypeDisplay.classList.add('manager');
+            
+            document.getElementById('manager-dashboard').style.display = 'block';
+            document.getElementById('employee-dashboard').style.display = 'none';
+            document.getElementById('employee-interface').style.display = 'none';
+            
+            console.log('✅ Modo gerente ativado com sucesso!');
+        }
+
+        function activateEmployeeMode() {
+            const header = document.getElementById('main-header');
+            const logoIcon = document.getElementById('logo-icon');
+            const userInfo = document.getElementById('user-info');
+            const userTypeDisplay = document.getElementById('user-type-display');
+            
+            header.classList.add('employee-mode');
+            logoIcon.classList.add('employee');
+            userInfo.classList.add('employee');
+            userTypeDisplay.classList.add('employee');
+            
+            document.getElementById('manager-dashboard').style.display = 'none';
+            document.getElementById('employee-dashboard').style.display = 'block';
+            document.getElementById('employee-interface').style.display = 'none';
+            
+            setupEmployeeEventListeners();
+            console.log('✅ Modo funcionário ativado com sucesso!');
+        }
+
+        function initializeManagerCharts() {
+            // Gráfico de movimentações por categoria
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryCtx) {
+                new Chart(categoryCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ferramentas', 'Eletrônicos', 'Escritório', 'Equipamentos'],
+                        datasets: [{
+                            label: 'Entradas',
+                            data: [65, 59, 80, 81],
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        }, {
+                            label: 'Saídas',
+                            data: [28, 48, 40, 19],
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de status do estoque
+            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+            if (inventoryCtx) {
+                new Chart(inventoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Normal', 'Atenção', 'Crítico'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(239, 68, 68, 0.8)'
+                            ],
+                        }]
+                    }
+                });
+            }
+        }
+
+        function setupManagerEventListeners() {
+            // Controles do dashboard do gerente
+            document.getElementById('btn-movimentacoes').addEventListener('click', function() {
+                switchSection('movimentacoes');
+            });
+
+            document.getElementById('btn-estoque').addEventListener('click', function() {
+                switchSection('estoque');
+            });
+
+            document.getElementById('btn-entrada-materiais').addEventListener('click', function() {
+                switchSection('entrada-materiais');
+            });
+
+            document.getElementById('btn-manutencao').addEventListener('click', function() {
+                switchSection('manutencao');
+            });
+
+            // Botões de transação do gerente
+            document.getElementById('manager-deposit-btn').addEventListener('click', function() {
+                setManagerTransactionType('deposit');
+            });
+            
+            document.getElementById('manager-withdrawal-btn').addEventListener('click', function() {
+                setManagerTransactionType('withdrawal');
+            });
+
+            // Formulário de transação do gerente
+            document.getElementById('manager-transaction-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const material = document.getElementById('manager-material').value;
+                const quantity = document.getElementById('manager-quantity').value;
+                const location = document.getElementById('manager-location').value;
+                const responsible = document.getElementById('manager-responsible').value;
+                const priority = document.getElementById('manager-priority').value;
+                const cost = document.getElementById('manager-cost').value;
+                
+                if (!material || !quantity || !location || !responsible || !cost) {
+                    alert('Por favor, preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
+                const transactionType = document.getElementById('manager-deposit-btn').classList.contains('active') ? 'Entrada' : 'Retirada';
+                const totalCost = (quantity * cost).toFixed(2);
+                
+                alert(`✅ ${transactionType} de material registrada com sucesso!\n\nMaterial: ${material}\nQuantidade: ${quantity}\nCusto Total: R$ ${totalCost}\nPrioridade: ${priority.toUpperCase()}`);
+                this.reset();
+            });
+
+            // Formulário de manutenção do gerente
+            document.getElementById('maintenance-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const equipment = document.getElementById('maintenance-equipment').value;
+                const type = document.getElementById('maintenance-type').value;
+                const priority = document.getElementById('maintenance-priority').value;
+                const description = document.getElementById('maintenance-description').value;
+                
+                if (!equipment || !type || !priority || !description) {
+                    alert('Por favor, preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
+                alert(`✅ Ordem de Serviço criada com sucesso!\n\nEquipamento: ${equipment}\nTipo: ${type}\nPrioridade: ${priority.toUpperCase()}`);
+                this.reset();
+            });
+
+            // Botão de gerar PDF
+            document.getElementById('generate-pdf-btn').addEventListener('click', function() {
+                generatePDF();
+            });
+        }
+
+        function setupEmployeeEventListeners() {
+            // Controles do dashboard do funcionário
+            document.getElementById('employee-btn-solicitacoes').addEventListener('click', function() {
+                switchEmployeeSection('solicitacoes');
+            });
+
+            document.getElementById('employee-btn-estoque').addEventListener('click', function() {
+                switchEmployeeSection('estoque');
+            });
+
+            document.getElementById('employee-btn-movimentacao').addEventListener('click', function() {
+                switchEmployeeSection('movimentacao');
+            });
+
+            document.getElementById('employee-btn-manutencao').addEventListener('click', function() {
+                switchEmployeeSection('manutencao');
+            });
+
+            document.getElementById('employee-btn-nova-solicitacao').addEventListener('click', function() {
+                switchEmployeeSection('nova-solicitacao');
+            });
+
+            // Botões de transação do funcionário
+            document.getElementById('employee-deposit-btn').addEventListener('click', function() {
+                setEmployeeTransactionType('deposit');
+            });
+            
+            document.getElementById('employee-withdrawal-btn').addEventListener('click', function() {
+                setEmployeeTransactionType('withdrawal');
+            });
+
+            // Formulário de transação do funcionário
+            document.getElementById('employee-transaction-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const material = document.getElementById('employee-transaction-material').value;
+                const quantity = document.getElementById('employee-transaction-quantity').value;
+                const location = document.getElementById('employee-transaction-location').value;
+                const project = document.getElementById('employee-transaction-project').value;
+                const priority = document.getElementById('employee-transaction-priority').value;
+                
+                if (!material || !quantity || !location || !project) {
+                    alert('Por favor, preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
+                const transactionType = document.getElementById('employee-deposit-btn').classList.contains('active') ? 'Entrada' : 'Retirada';
+                
+                alert(`✅ ${transactionType} de material registrada com sucesso!\n\nMaterial: ${material}\nQuantidade: ${quantity}\nProjeto: ${project}\nPrioridade: ${priority.toUpperCase()}`);
+                this.reset();
+            });
+
+            // Formulário de manutenção do funcionário
+            document.getElementById('employee-maintenance-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const equipment = document.getElementById('employee-maintenance-equipment').value;
+                const type = document.getElementById('employee-maintenance-type').value;
+                const priority = document.getElementById('employee-maintenance-priority').value;
+                const description = document.getElementById('employee-maintenance-description').value;
+                
+                if (!equipment || !type || !priority || !description) {
+                    alert('Por favor, preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
+                alert(`✅ Solicitação de manutenção enviada com sucesso!\n\nEquipamento: ${equipment}\nTipo: ${type}\nPrioridade: ${priority.toUpperCase()}`);
+                this.reset();
+            });
+
+            // Formulário de solicitação do funcionário
+            document.getElementById('employee-request-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const material = document.getElementById('employee-material').value;
+                const quantity = document.getElementById('employee-quantity').value;
+                const project = document.getElementById('employee-project').value;
+                const urgency = document.getElementById('employee-urgency').value;
+                const justification = document.getElementById('employee-justification').value;
+                
+                if (!material || !quantity || !project || !justification) {
+                    alert('Por favor, preencha todos os campos obrigatórios!');
+                    return;
+                }
+                
+                alert(`✅ Solicitação enviada com sucesso!\n\nMaterial: ${material}\nQuantidade: ${quantity}\nProjeto: ${project}\nUrgência: ${urgency.toUpperCase()}`);
+                this.reset();
+            });
+
+            // Busca no estoque
+            document.getElementById('employee-search-stock').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const inventoryItems = document.querySelectorAll('.inventory-item');
+                
+                inventoryItems.forEach(item => {
+                    const label = item.querySelector('.inventory-label').textContent.toLowerCase();
+                    if (label.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function setupCommonEventListeners() {
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.href = 'login.html';
+            });
+        }
+
+        function switchSection(sectionName) {
+            // Desativar todas as seções
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Desativar todos os botões
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Ativar seção e botão correspondentes
+            document.getElementById(`section-${sectionName}`).classList.add('active');
+            document.getElementById(`btn-${sectionName}`).classList.add('active');
+        }
+
+        function switchEmployeeSection(sectionName) {
+            // Desativar todas as seções
+            document.querySelectorAll('.employee-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Desativar todos os botões
+            document.querySelectorAll('.employee-control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Ativar seção e botão correspondentes
+            document.getElementById(`employee-section-${sectionName}`).classList.add('active');
+            document.getElementById(`employee-btn-${sectionName}`).classList.add('active');
+        }
+
+        function setManagerTransactionType(type) {
+            const depositBtn = document.getElementById('manager-deposit-btn');
+            const withdrawalBtn = document.getElementById('manager-withdrawal-btn');
+            const submitBtn = document.getElementById('manager-submit-btn');
+            
+            if (type === 'deposit') {
+                depositBtn.classList.remove('btn-secondary');
+                depositBtn.classList.add('active');
+                withdrawalBtn.classList.remove('active');
+                withdrawalBtn.classList.add('btn-secondary');
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Registrar Entrada</span>';
+                submitBtn.className = 'btn btn-block btn-success';
+            } else {
+                depositBtn.classList.remove('active');
+                depositBtn.classList.add('btn-secondary');
+                withdrawalBtn.classList.remove('btn-secondary');
+                withdrawalBtn.classList.add('active');
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Registrar Retirada</span>';
+                submitBtn.className = 'btn btn-block btn-danger';
+            }
+        }
+
+        function setEmployeeTransactionType(type) {
+            const depositBtn = document.getElementById('employee-deposit-btn');
+            const withdrawalBtn = document.getElementById('employee-withdrawal-btn');
+            const submitBtn = document.getElementById('employee-transaction-submit-btn');
+            
+            if (type === 'deposit') {
+                depositBtn.classList.remove('btn-secondary');
+                depositBtn.classList.add('active');
+                withdrawalBtn.classList.remove('active');
+                withdrawalBtn.classList.add('btn-secondary');
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Registrar Entrada</span>';
+                submitBtn.className = 'btn btn-block btn-success';
+            } else {
+                depositBtn.classList.remove('active');
+                depositBtn.classList.add('btn-secondary');
+                withdrawalBtn.classList.remove('btn-secondary');
+                withdrawalBtn.classList.add('active');
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i><span>Registrar Retirada</span>';
+                submitBtn.className = 'btn btn-block btn-danger';
+            }
+        }
+
+        function solicitarMaterial(material) {
+            document.getElementById('employee-material').value = material;
+            document.getElementById('employee-quantity').value = 1;
+            switchEmployeeSection('nova-solicitacao');
+            document.getElementById('employee-justification').focus();
+        }
+
+        function solicitarManutencao(tipo) {
+            document.getElementById('employee-maintenance-equipment').value = tipo.toLowerCase();
+            document.getElementById('employee-maintenance-priority').value = 'alta';
+            switchEmployeeSection('manutencao');
+            document.getElementById('employee-maintenance-description').focus();
+        }
+
+        // Função para gerar PDF
+        function generatePDF() {
+            // Verificar se jsPDF está disponível
+            if (typeof window.jspdf !== 'undefined') {
+                const { jsPDF } = window.jspdf;
+                
+                // Criar um novo documento PDF
+                const doc = new jsPDF();
+                
+                // Adicionar título
+                doc.setFontSize(20);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Relatório do Sistema de Logística', 20, 30);
+                
+                // Adicionar data e hora
+                const now = new Date();
+                const dateTime = now.toLocaleString('pt-BR');
+                doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Gerado em: ${dateTime}`, 20, 45);
+                
+                // Adicionar informações do usuário
+                const username = localStorage.getItem('username') || 'Usuário';
+                doc.text(`Gerado por: ${username}`, 20, 55);
+                
+                // Adicionar métricas principais
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Métricas Principais', 20, 75);
+                
+                doc.setFontSize(12);
+                doc.text(`• Valor Total em Estoque: R$ 284.500,00`, 25, 90);
+                doc.text(`• Giro de Estoque: 3.2x`, 25, 100);
+                doc.text(`• Itens em Estoque: 1.247`, 25, 110);
+                doc.text(`• Solicitações de Manutenção: 12`, 25, 120);
+                
+                // Adicionar alertas
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Alertas do Sistema', 20, 140);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(220, 50, 50);
+                doc.text(`• Estoque Crítico: Componentes Eletrônicos abaixo do nível mínimo`, 25, 155);
+                
+                // Adicionar movimentações recentes
+                doc.setFontSize(16);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Movimentações Recentes', 20, 175);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Data/Hora', 25, 190);
+                doc.text('Usuário', 60, 190);
+                doc.text('Tipo', 90, 190);
+                doc.text('Material', 115, 190);
+                doc.text('Quantidade', 150, 190);
+                doc.text('Status', 175, 190);
+                
+                // Linha divisória
+                doc.line(20, 195, 190, 195);
+                
+                // Dados da tabela
+                doc.text('15/10/2023 14:30', 25, 205);
+                doc.text('João Silva', 60, 205);
+                doc.setTextColor(0, 150, 0);
+                doc.text('Entrada', 90, 205);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Ferramentas', 115, 205);
+                doc.text('50', 150, 205);
+                doc.setTextColor(0, 150, 0);
+                doc.text('Concluído', 175, 205);
+                
+                doc.setTextColor(40, 40, 40);
+                doc.text('15/10/2023 11:15', 25, 215);
+                doc.text('Maria Santos', 60, 215);
+                doc.setTextColor(220, 50, 50);
+                doc.text('Saída', 90, 215);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Componentes Eletrônicos', 115, 215);
+                doc.text('25', 150, 215);
+                doc.setTextColor(220, 50, 50);
+                doc.text('Pendente', 175, 215);
+                
+                // Adicionar rodapé
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('SLA - Sistema de Logística e Armazenamento', 105, 280, null, null, 'right');
+                
+                // Salvar o PDF
+                doc.save('relatorio_sistema_logistica.pdf');
+                
+                alert('✅ Relatório PDF gerado com sucesso!');
+            } else {
+                alert('❌ Erro ao gerar PDF. A biblioteca jsPDF não está disponível.');
+            }
+        }
+    </script>
+</body>
+</html>

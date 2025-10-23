@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Logística e Armazenamento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-dark: #2563eb;
+            --light: #f8fafc;
+            --dark: #0a0f1c;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --manager-accent: #8b5cf6;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .logo h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--light);
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            background: linear-gradient(90deg, var(--accent-light), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page {
+            flex: 1;
+            padding: 2.5rem 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .card-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--light);
+            text-align: center;
+            font-weight: 800;
+            position: relative;
+        }
+
+        .card-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            margin: 12px auto 0;
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background-color: rgba(15, 23, 42, 0.7);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background-color: rgba(15, 23, 42, 0.9);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 1.1rem 2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #2d3447 100%);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-avatar {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .register-link {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .register-link a {
+            color: var(--accent-light);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-accounts {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .demo-accounts h3 {
+            color: var(--accent-light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .demo-account {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .demo-account:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+
+        .demo-account:last-child {
+            border-bottom: none;
+        }
+
+        .demo-account span {
+            font-weight: 600;
+        }
+
+        .demo-account .password {
+            color: var(--success);
+            font-family: monospace;
+        }
+
+        .user-type-info {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--manager-accent);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .user-type-info .manager {
+            color: var(--manager-accent);
+            font-weight: bold;
+        }
+
+        .user-type-info .employee {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .debug-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">SLA</div>
+                    <h1>Sistema de <span>Logística e Armazenamento</span></h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="login" class="page">
+        <div class="container">
+            <div class="login-container">
+                <div class="card">
+                    <div class="login-header">
+                        <div class="login-avatar">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <h2 class="card-title">Acesso ao Sistema</h2>
+                        <p class="login-subtitle">Digite seu usuário e senha para entrar</p>
+                    </div>
+
+                    <div id="user-type-info" class="user-type-info" style="display: none;">
+                        <p>Modo selecionado: <span id="selected-type"></span></p>
+                    </div>
+                    
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username">Usuário</label>
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-user"></i>
+                                <input type="text" id="username" placeholder="Digite seu usuário" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Senha</label>
+                            <div class="input-with-icon">
+                                <i class="input-icon fas fa-lock"></i>
+                                <input type="password" id="password" placeholder="Digite sua senha" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-block" id="login-btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Entrar no Sistema</span>
+                        </button>
+                    </form>
+
+                    <!-- Área de Debug (pode remover depois) -->
+                    <div class="debug-info" id="debug-info">
+                        <strong>Info do Sistema:</strong>
+                        <div id="debug-content">Carregando...</div>
+                    </div>
+
+                    <div class="demo-accounts">
+                        <h3><i class="fas fa-key"></i> Contas de Demonstração</h3>
+                        <div class="demo-account" data-user="funcionario" data-pass="123456">
+                            <span>Usuário: funcionario</span>
+                            <span class="password">Senha: 123456</span>
+                        </div>
+                        <div class="demo-account" data-user="gerente" data-pass="123456">
+                            <span>Usuário: gerente</span>
+                            <span class="password">Senha: 123456</span>
+                        </div>
+                        <div class="demo-account" data-user="admin" data-pass="123456">
+                            <span>Usuário: admin</span>
+                            <span class="password">Senha: 123456</span>
+                        </div>
+                    </div>
+
+                    <div class="register-link">
+                        <p>Não tem uma conta? <a href="cadastro.html" id="cadastro-link">Cadastre-se aqui</a></p>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <a href="index.html" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Voltar para Início</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // SISTEMA DE AUTENTICAÇÃO CORRIGIDO
+        class SimpleAuthSystem {
+            constructor() {
+                console.log('🔧 Inicializando sistema de autenticação...');
+                this.users = this.loadUsersFromStorage();
+                
+                if (this.users.length === 0) {
+                    console.log('📝 Nenhum usuário encontrado. Criando usuários padrão...');
+                    this.initializeDefaultUsers();
+                } else {
+                    console.log(`✅ ${this.users.length} usuário(s) carregado(s) do storage`);
+                }
+            }
+
+            loadUsersFromStorage() {
+                try {
+                    const storedUsers = localStorage.getItem('system_users');
+                    if (storedUsers) {
+                        const users = JSON.parse(storedUsers);
+                        console.log('📦 Usuários carregados:', users);
+                        return users;
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao carregar usuários:', error);
+                }
+                return [];
+            }
+
+            saveUsersToStorage() {
+                try {
+                    localStorage.setItem('system_users', JSON.stringify(this.users));
+                    console.log('💾 Usuários salvos no storage:', this.users);
+                } catch (error) {
+                    console.error('❌ Erro ao salvar usuários:', error);
+                }
+            }
+
+            initializeDefaultUsers() {
+                console.log('👥 Criando usuários padrão...');
+                
+                // USUÁRIOS PADRÃO - CORRIGIDOS
+                this.users = [
+                    {
+                        id: 1,
+                        username: "funcionario",
+                        password: "123456",
+                        type: "employee",
+                        name: "João Silva",
+                        email: "funcionario@empresa.com",
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        username: "gerente",
+                        password: "123456",
+                        type: "manager",
+                        name: "Maria Santos",
+                        email: "gerente@empresa.com",
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        username: "admin",
+                        password: "123456",
+                        type: "manager",
+                        name: "Administrador",
+                        email: "admin@empresa.com",
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+
+                this.saveUsersToStorage();
+                console.log("✅ Usuários padrão criados com sucesso!");
+                console.log("📋 Lista de usuários:", this.users);
+            }
+
+            authenticate(username, password) {
+                console.log(`🔐 Tentando autenticar: ${username}`);
+                
+                const user = this.users.find(u => u.username === username);
+                console.log('👤 Usuário encontrado:', user);
+
+                if (!user) {
+                    console.log('❌ Usuário não encontrado');
+                    return { success: false, message: "Usuário não encontrado" };
+                }
+
+                if (user.password === password) {
+                    console.log('✅ Senha correta! Login bem-sucedido');
+                    return { 
+                        success: true, 
+                        user: {
+                            id: user.id,
+                            username: user.username,
+                            name: user.name,
+                            type: user.type,
+                            email: user.email
+                        }
+                    };
+                } else {
+                    console.log('❌ Senha incorreta');
+                    return { success: false, message: "Senha incorreta" };
+                }
+            }
+
+            // Método para forçar recriação dos usuários (para debug)
+            forceResetUsers() {
+                console.log('🔄 Forçando reset dos usuários...');
+                localStorage.removeItem('system_users');
+                this.initializeDefaultUsers();
+            }
+        }
+
+        // Inicializar sistema
+        const authSystem = new SimpleAuthSystem();
+
+        function login(username, password) {
+            console.log(`🚀 Iniciando login para: ${username}`);
+            
+            const result = authSystem.authenticate(username, password);
+            
+            if (result.success) {
+                // Salvar dados do usuário no localStorage
+                localStorage.setItem('loggedIn', 'true');
+                localStorage.setItem('userType', result.user.type);
+                localStorage.setItem('username', result.user.username);
+                localStorage.setItem('userName', result.user.name);
+                localStorage.setItem('userId', result.user.id);
+                
+                if (result.user.email) {
+                    localStorage.setItem('userEmail', result.user.email);
+                }
+                
+                console.log('✅ Dados salvos no localStorage:', {
+                    loggedIn: localStorage.getItem('loggedIn'),
+                    userType: localStorage.getItem('userType'),
+                    username: localStorage.getItem('username')
+                });
+                
+                alert('✅ Login realizado com sucesso!');
+                
+                // Redirecionar para a página principal
+                window.location.href = 'deposit.html';
+            } else {
+                console.log('❌ Falha no login:', result.message);
+                alert('❌ Erro no login: ' + result.message);
+            }
+        }
+
+        function fillDemoAccount(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            console.log(`📝 Preenchendo dados: ${username} / ${password}`);
+        }
+
+        function showUserTypeInfo() {
+            const selectedType = localStorage.getItem('selectedUserType');
+            const infoDiv = document.getElementById('user-type-info');
+            const typeSpan = document.getElementById('selected-type');
+            
+            if (selectedType) {
+                const typeText = selectedType === 'manager' ? 'GERENTE' : 'FUNCIONÁRIO';
+                const typeClass = selectedType === 'manager' ? 'manager' : 'employee';
+                
+                typeSpan.textContent = typeText;
+                typeSpan.className = typeClass;
+                infoDiv.style.display = 'block';
+                console.log(`🎯 Modo selecionado: ${typeText}`);
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        function updateDebugInfo() {
+            const debugContent = document.getElementById('debug-content');
+            const users = authSystem.loadUsersFromStorage();
+            
+            let debugHTML = `
+                <div>Usuários no sistema: ${users.length}</div>
+                <div>Usuários: ${users.map(u => u.username).join(', ')}</div>
+                <div>Storage key: ${localStorage.getItem('system_users') ? 'Presente' : 'Ausente'}</div>
+            `;
+            
+            debugContent.innerHTML = debugHTML;
+        }
+
+        // Configurar eventos quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Sistema de login carregado!');
+            
+            // Mostrar informações de debug
+            updateDebugInfo();
+            showUserTypeInfo();
+            
+            // Preencher automaticamente com a conta do funcionário
+            fillDemoAccount('funcionario', '123456');
+            
+            // Evento do formulário de login
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (!username || !password) {
+                    alert('⚠️ Por favor, preencha todos os campos!');
+                    return;
+                }
+                
+                console.log(`📤 Submetendo login: ${username}`);
+                login(username, password);
+            });
+
+            // Eventos para as contas de demonstração
+            const demoAccounts = document.querySelectorAll('.demo-account');
+            demoAccounts.forEach(account => {
+                account.addEventListener('click', function() {
+                    const username = this.getAttribute('data-user');
+                    const password = this.getAttribute('data-pass');
+                    fillDemoAccount(username, password);
+                });
+            });
+
+            // Botão de cadastro
+            document.getElementById('cadastro-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('➡️ Redirecionando para cadastro...');
+                window.location.href = 'cadastro.html';
+            });
+
+            // Botão de reset (para debug - pode remover depois)
+            const debugDiv = document.getElementById('debug-info');
+            const resetBtn = document.createElement('button');
+            resetBtn.textContent = 'Resetar Usuários';
+            resetBtn.className = 'btn btn-secondary';
+            resetBtn.style.marginTop = '10px';
+            resetBtn.style.fontSize = '0.8rem';
+            resetBtn.style.padding = '0.5rem 1rem';
+            resetBtn.addEventListener('click', function() {
+                authSystem.forceResetUsers();
+                updateDebugInfo();
+                alert('🔄 Usuários resetados! Use: funcionario/123456 ou gerente/123456');
+            });
+            debugDiv.appendChild(resetBtn);
+
+            console.log('✅ Sistema pronto!');
+            console.log('👤 Use: funcionario / 123456');
+            console.log('👔 Use: gerente / 123456 para acesso de gerente');
+        });
+    </script>
+</body>
+</html>
